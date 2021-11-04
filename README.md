@@ -69,13 +69,15 @@ git commit -m "add: Install initial dependencies for project"
 
 * make sure your `language emmetter` works.
 * install `ES7 REACT/REDUX/GRAPH` extension in VSCode
-* install `auto rename tag`
+* install `auto rename tag` extension in VSCode
 * save tailwindcss file again if changes do not show immediately
 * install hero icons
 
 ```text
 yarn add @heroicons/react
 ```
+
+* install `Tailwing CSS Intellisense` for auto complete of tailwind variables
 
 ## `2` Create Amazon Navbar
 
@@ -89,7 +91,7 @@ yarn add @heroicons/react
   </div>
 ```
 
-`3` Import `Image` from `next/image` node module
+`3` Import `Image` from `next/image` node module to the top of your page
 
 ```js
 import Image from "next/image"
@@ -130,7 +132,9 @@ import { MenuIcon,
         from "@heroicons/react/outline"
 ```
 
-`7` then add your `SearchIcon` to the search div and style with tailwind. 
+`7` then add your `SearchIcon` to the search div. Use `hidden` to hide the search bar on small screens and show when adjusting to larger screens with flexbox
+
+`8` Add tailwind styling to input box
 
 ```js
   {/* search bar */}
@@ -140,11 +144,23 @@ import { MenuIcon,
   </div>
 ```
 
-Use `hidden` to hide the search bar on small screens and show when adjusting to larger screens with flexbox
-
-`8` Add tailwind styling to input box
 
 `9` Add Icons to the right side of the navbar
+
+`10` Add links to navbars by adding a custom utility to your components using tailwind. Go to your styles/global.css and add the following code 
+
+```css
+/* how to create a custom utility class */
+@layer components {
+    .link {
+        @apply cursor-pointer hover:underline
+    }
+}
+```
+
+
+
+`11` Then change the `className` to `link` for each icon div. Add number above the basket to show how many items you have in the shopping Cart.
 
 ```js
 {/* Right Side Icons */}
@@ -158,32 +174,17 @@ Use `hidden` to hide the search bar on small screens and show when adjusting to 
           <p className="font-extrabold md:text-sm">& Orders</p>
       </div>
       <div className="relative link flex items-center">
+      // Number of items in the shopping Cart
           <span className="absolute top-0 right-0 md:right-10 h-4 w-4 bg-yellow-400 text-center rounded-full text-black font-bold">0</span>
           <ShoppingCartIcon className="h-10"/>
           <p className="hidden md:inline font-extrabold md:text-sm mt-2">Basket</p>
       </div>
   </div>
 ```
-`10` Add links to navbars by adding a custom utility to your components using tailwind. Go to your styles/global.css and add the following code 
-
-```css
-/* how to create a custom utility class */
-@layer components {
-    .link {
-        @apply cursor-pointer hover:underline
-    }
-}
-```
 
 ```text
 git add .
 git commit -m "update: add navbar icons and links"
-```
-
-`11` Add number above the basket to show how many items you have. Add right above the shopping Cart
-
-```js
-  <span className="absolute top-0 right-0 md:right-10 h-4 w-4 bg-yellow-400 text-center rounded-full text-black font-bold">0</span>
 ```
 
 `12` Add Menu Icon to the navbar along with associated links and style using tailwind
