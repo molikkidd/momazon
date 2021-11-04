@@ -149,3 +149,34 @@ Use `hidden` to hide the search bar on small screens and show when adjusting to 
 git add .
 git commit -m "update: add navbar icons and links"
 ```
+
+`11` Add number above the basket to show how many items you have. Add right above the shopping Cart
+
+```js
+  <span className="absolute top-0 right-0 md:right-10 h-4 w-4 bg-yellow-400 text-center rounded-full text-black font-bold">0</span>
+```
+
+`12` Add Menu Icon to the navbar along with associated links and style using tailwind
+
+```js
+  <div className="flex items-center space-x-3 p-2 pl-6 bg-amazon_blue-light text-white text-sm">
+        <p className="link flex items-center">
+            <MenuIcon className="h-6 mr-1"/>
+            All
+        </p>
+        <p className="link">Prime Video</p>
+        <p className="link">Amazon Business</p>
+        <p className="link">Today's Deals</p>
+        <p className="link hidden lg:inline-flex">Electronics</p>
+        <p className="link hidden lg:inline-flex">Food & Groceries</p>
+        <p className="link hidden lg:inline-flex">Prime</p>
+        <p className="link hidden lg:inline-flex">Buy Again</p>
+        <p className="link hidden lg:inline-flex">Shopper Toolkit</p>
+        <p className="link hidden lg:inline-flex">Health & Personal Care</p>
+    </div>
+```
+
+```text
+git add
+git commit -m "update: complete navbar basics"
+```
