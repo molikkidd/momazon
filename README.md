@@ -55,6 +55,7 @@ tailwindcss firebase firebase-admin
   provides the tools and infrastructure you need to develop, grow, and earn money from your app.
 - [firebase-admin](https://github.com/expressjs/session): 
   The Firebase Admin Node.js SDK enables access to Firebase services from privileged environments (such as servers or cloud) in Node.js.
+```
 
 `4` Make a commit
 
@@ -63,4 +64,38 @@ git add .
 git commit -m "add: Install initial dependencies for project"
 ```
 
-## `2` 
+
+`5` Shortcuts
+
+* make sure your `language emmetter` works.
+* install `ES7 REACT/REDUX/GRAPH` extension in VSCode
+* install `auto rename tag`
+* save tailwindcss file again if changes do not show immediately
+* install hero icons
+
+```text
+yarn add @heroicons/react
+```
+
+## `2` Create Amazon Navbar
+
+`1` Inside of your src folder Create another folder called `components` and add `Header.js`
+
+`2` In your `Header.js` add your Header function and structure your divs.
+
+
+`3` Import `Image` from `next/image` node module
+
+
+`4` Add your `Image` tag
+
+
+`5` setup next.js to connect images to your domain. Create a nextconfig.js file and add the following code 
+
+```js
+module.exports = {
+    images: {
+        domains: ['links.papareact.com', 'fakestoreapi.com']
+    }
+};
+```
