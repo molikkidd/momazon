@@ -35,8 +35,7 @@ Run commands
 `2` Now we are going to install the current dependencies that are listed inside of `package.json`
 
 ```text
-npm install next react react-dom react-redux 
-tailwindcss firebase firebase-admin
+npm install next react react-dom react-redux tailwindcss firebase firebase-admin
 ```
 
 ```text
@@ -210,4 +209,203 @@ git commit -m "update: add navbar icons and links"
 ```text
 git add
 git commit -m "update: complete navbar basics"
+```
+
+## `3` Create Banner and Product Feed
+
+`1` Inside of your `index.js` file create a `main` tag and inside of their create your `Banner` 
+
+`2` inside of your `components` create at `Banner.js` file
+
+`3` install and add `react-responsive-carousel` to your Banner file along 
+
+```text
+yarn add react-responsive-carousel
+```
+
+You also have to import the react-resposive-carousel css
+
+```js
+import "react-responsive-carousel/lib/styles/carousel.min.css"
+import { Carousel } from "react-responsive-carousel"
+
+```
+
+`4` Add your Carousel to your `Banner` function as well as your associate links and tailwind styling
+
+```js
+<div className="relative">
+  <div className="absolute w-full h-32 bg-gradient-to-t from-bg-gray-100 to to-transparent bottom-0 z-20"/>
+
+  <Carousel autoPlay 
+  infiniteLoop 
+  showStatus={false} 
+  showIndicators={false}
+  showThumbs={false} 
+  interval={5000}>
+      <div>
+          <img loading="lazy" src="https://links.papareact.com/gi1" alt="carousel image" />
+      </div>
+      <div>
+          <img loading="lazy" src="https://links.papareact.com/6ff" alt="carousel image" />
+      </div>
+      <div>
+          <img loading="lazy" src="https://links.papareact.com/7ma" alt="carousel image" />
+      </div>
+  </Carousel>
+</div>
+```
+
+## `4` Create Product Feed component
+
+`1` Add your `ProductFeed.js` to your components folder
+
+`2` Go back to your `index.js` file and connect your app to the fakestoreapi to grab product information for the `productfeed`
+
+```js
+// Get the serverside props and render them before delivering
+// the data to the clients page
+export async function getServerSideProps(context) {
+  // fetch products from api
+  const products = await fetch("https://fakestoreapi.com/products").then((res) => res.json()
+  );
+   return {
+      props: {
+        products
+    }
+  };
+}
+```
+
+`3` Then deconstruct your props in your `Home` function to take in products as an input. pass products props to ProductFeed component
+
+```js
+function Home({products})
+```
+
+`4` Create a `Product.js` component which will serve as a template for each product on the page.
+
+`5` Deconstruct your product attributes on your ProductFeed function and map thru the products then pass those properties on to your `Product.js` component
+
+```js
+import Product from "./Product";
+
+export default function ProductFeed({products}) {
+    return (
+      <div>
+        <h2>products goes here</h2> 
+        
+        {products.map(({id, title, price, description, category, image}) => (
+            <Product
+            key={id}
+            id={id}
+            title={title}
+            price={price}
+            description={description}
+            category={category}
+            image={image}
+            />
+        ))}
+      </div>
+    )
+}
+```
+
+
+`6` install react-currency-formatter which will add global currency symbols to your page.
+
+```text
+yarn add react-currency-formatter
+```
+
+`7` Also add a custom amazon button thru tailwindcss
+
+```css
+.button {
+  @apply p-2 text-xs md:text-sm bg-gradient-to-b 
+  from-yellow-200 to-yellow-400 border border-yellow-300 
+  rounded-sm focus:outline-none focus:ring-2 
+  focus:ring-yellow-500 active:from-yellow-500
+    }
+```
+`8` Add grid to `ProductFeed` which will responsively change as the width of the screen changes. 
+
+```js
+ <div className="grid grid-flow-row-dense md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:-mt-52 mx:auto">
+
+  {products.slice(0,4).map(({id, title, price, description, category, image}) => (
+      <Product
+      key={id}
+      id={id}
+      title={title}
+      price={price}
+      description={description}
+      category={category}
+      image={image}
+      />
+  ))}
+  </div>
+```
+
+`9` Add image to bottom of `ProductFeed.js`, belowe the grid which will act as aan advertisement banner. 
+
+```js
+  <img className="md:col-span-full" src="https://links.papareact.com/dyz" alt="" />
+```
+
+`10` And to finish off the page, add images below your advertisement banner by slicing your images to show the first 4 products--> ads --> display the remaining products
+
+```js
+import Product from "./Product";
+
+export default function ProductFeed({products}) {
+    return (
+        <div className="grid grid-flow-row-dense md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:-mt-52 mx:auto">
+
+           {products.slice(0,4).map(({id, title, price, description, category, image}) => (
+               <Product
+               key={id}
+               id={id}
+               title={title}
+               price={price}
+               description={description}
+               category={category}
+               image={image}
+               />
+           ))}
+
+           <img className="md:col-span-full" src="https://links.papareact.com/dyz" alt="" />
+
+           <div className="md:col-span-2">
+           {products.slice(4,5).map(({id, title, price, description, category, image}) => (
+               <Product
+               key={id}
+               id={id}
+               title={title}
+               price={price}
+               description={description}
+               category={category}
+               image={image}
+               />
+           ))}
+           </div>
+           {products.slice(5, products.length).map(({id, title, price, description, category, image}) => (
+               <Product
+               key={id}
+               id={id}
+               title={title}
+               price={price}
+               description={description}
+               category={category}
+               image={image}
+               />
+           ))}
+        </div>
+    )
+}
+```
+
+```text
+git add .
+git commit -m "add: create tailwind grid, add advertisement banner and style amazon button"
 ```
