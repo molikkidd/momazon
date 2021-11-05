@@ -122,6 +122,8 @@ module.exports = {
 
 Then restart your server
 
+
+
 `6` Import the shopping, search and menu icons from hero icons
 
 ```js
@@ -143,6 +145,8 @@ import { MenuIcon,
   </div>
 ```
 
+![Screen Shot 2021-11-04 at 11 49 57 AM](https://user-images.githubusercontent.com/28605078/140438027-2064aaa9-9839-4e60-8b16-1d6a3ef604c3.png)
+
 
 `9` Add Icons to the right side of the navbar
 
@@ -156,8 +160,6 @@ import { MenuIcon,
     }
 }
 ```
-
-
 
 `11` Then change the `className` to `link` for each icon div. Add number above the basket to show how many items you have in the shopping Cart.
 
@@ -180,6 +182,8 @@ import { MenuIcon,
       </div>
   </div>
 ```
+
+![Screen Shot 2021-11-04 at 12 37 14 PM](https://user-images.githubusercontent.com/28605078/140438112-5ad1deb7-26c2-4bcc-93a9-32110f69c615.png)
 
 ```text
 git add .
@@ -205,6 +209,8 @@ git commit -m "update: add navbar icons and links"
         <p className="link hidden lg:inline-flex">Health & Personal Care</p>
     </div>
 ```
+
+![Screen Shot 2021-11-04 at 2 51 03 PM](https://user-images.githubusercontent.com/28605078/140438133-f24993db-d028-40de-8102-fd5f7e573521.png)
 
 ```text
 git add
@@ -255,6 +261,9 @@ import { Carousel } from "react-responsive-carousel"
   </Carousel>
 </div>
 ```
+
+![Screen Shot 2021-11-04 at 2 50 49 PM](https://user-images.githubusercontent.com/28605078/140438148-1bbf3390-0c6a-47da-8568-d0b399a4ec47.png)
+
 
 ## `4` Create Product Feed component
 
@@ -347,6 +356,9 @@ yarn add react-currency-formatter
   </div>
 ```
 
+![Screen Shot 2021-11-04 at 3 53 59 PM](https://user-images.githubusercontent.com/28605078/140438235-5417eda7-58da-4795-849c-a637e0c7ece2.png)
+
+
 `9` Add image to bottom of `ProductFeed.js`, belowe the grid which will act as aan advertisement banner. 
 
 ```js
@@ -404,6 +416,8 @@ export default function ProductFeed({products}) {
     )
 }
 ```
+
+![Screen Shot 2021-11-04 at 5 25 40 PM](https://user-images.githubusercontent.com/28605078/140438393-ad389523-1d52-42d0-9dd4-4aec2304ed7c.png)
 
 ```text
 git add .
