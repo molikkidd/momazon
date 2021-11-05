@@ -423,3 +423,87 @@ export default function ProductFeed({products}) {
 git add .
 git commit -m "add: create tailwind grid, add advertisement banner and style amazon button"
 ```
+
+## `5` Setup `NextAuth.js` along with `Firebase`
+
+`1` install NextAuth.js
+
+```text 
+yarn add next-auth
+```
+
+`2` create an `api` folder within your `pages` folder to create your own api endpoint. 
+
+`3` With in the api folder, create another folder called `[...nextauth].js` , then Copy and paste the api route from the `nextauth.js` documentation below into your `[...nextauth].js`
+
+```js
+import NextAuth from "next-auth"
+import GithubProvider from "next-auth/providers/github"
+
+export default NextAuth({
+  // Configure one or more authentication providers
+  providers: [
+    GithubProvider({
+      clientId: process.env.GITHUB_ID,
+      clientSecret: process.env.GITHUB_SECRET,
+    }),
+    // ...add more providers here
+  ],
+})
+```
+
+`4` Change the Providers according to your liking, but for this build we are using google login. Change GithubProvider to the following
+
+```js
+export default NextAuth({
+
+providers: [
+    Providers.Google({
+      clientId: process.env.GOOGLE_ID,
+      clientSecret: process.env.GOOGLE_SECRET,
+    }),
+]
+})
+```
+
+`5` Create an `.env.local` file at the root folder and add your google id and secret variables.
+
+```text
+# Authentication
+GOOGLE_ID=key_goes_here
+GOOGLE_SECRET=key_goes_here
+NEXTAUTH_URL=http://localhost:3000
+```
+
+`6` Head over to `firebase.com`, create an account if you dont have one already. Then create a new project.
+
+`7` go to your project settings, go to the bottom of the page and click the route icon to register your application.
+
+`8` click `continue` then click `continue to console`
+
+`9` In your console, go to your apps below, select the `config` dial under `SDK setup and configuration` and
+copy the code.
+
+`10` Create a `firebase.js` file on the root level of the project and paste in the copied code.
+
+`11` Go back to Firebase and click `Authenication` on the side menu then click `Get Started`.
+
+`12` Select Google then select `Enable`. Type in your email into the `project support email` then click save.
+
+`13` Click on Google again, go down to `Web SDK configuration` and copy the  `Web client ID` and `Web client secret`
+
+`14` Go back your `.env.local` file and paste the `Web client ID` and `Web client secret` to their associated Google variables.
+
+
+`15` If you havent install firebase already then install it now with 
+
+```text
+yarn add firebase
+```
+
+Then import firebase into your `firebase.js` file
+
+```js
+import firebase from "firebase";
+```
+
