@@ -507,3 +507,61 @@ Then import firebase into your `firebase.js` file
 import firebase from "firebase";
 ```
 
+## `6` Add `SignIn` and `SignOut` to home page
+
+`1` import `signin`, `sign` and `useSession` inside of your `Header.js`
+
+```js
+import {signIn, signOut, useSession } from "next-auth/client"
+```
+
+`2` Test your Google sign in by adding an onclick event to one of your right side icons div.
+
+```js
+  <div onClick={signIn} className="text-white flex items-center text-xs space-x-6 mx-6 whitespace-nowrap"> 
+
+```
+
+`3` You will have an error when signing in to your google account initially so, go to `https://console.cloud.google.com`, select your application. It might not show in your current selection of projects so make sure to click `ALL`.
+
+`4` Select your project, click `Credentials` on the sidemenu then click the `Web Client` link within the `OAuth 2.0 client IDS`
+
+`5` Within there, add `http://localhost:3000` to `Authorized Javascript origins` then add the redirect link provided in the error. ex: `http://localhost:3000/api/auth/callback/google`. Save the file then test your sign in again. 
+
+`6` Go to your `_app.js` file and import your providers so it will allow you to access your authenication across all pages in the application. 
+
+```js
+import { Provider  as AuthProvider } from 'next-auth/client'
+```
+
+then add AuthProvider as a higher order component within the file
+
+```js
+<AuthProvider session={pageProps.session}>
+    <Provider store={store}>
+      <Component {...pageProps} />
+    </Provider>
+
+</AuthProvider>
+```
+
+`7` Go back to your `index.js` and declare your `useSession` so that you can monitor whether the user is logged in or not. Within Header function before the return. add your `session` variable.
+
+```js
+    const [session] = useSession();
+```
+
+Then add a conditional statement checking whether the user is login in, if not then `SignIn`.
+
+```js
+  {session ? `Hello, ${session.user.name}` : "Sign In"}
+```
+
+also adjust your `signIn` to a conditional that allows the user to sign out if they are in a session and vice versa.
+
+```js
+  <div onClick={!session ? signIn : signOut} className="link">
+```
+
+## `7` Create Checkout page
+
