@@ -565,3 +565,272 @@ also adjust your `signIn` to a conditional that allows the user to sign out if t
 
 ## `7` Create Checkout page
 
+`1` Create a `Checkout` file in your `pages` folder.
+
+`2` Import the `Header` component into your `Checkout` file. 
+
+`3` Then route your `BasketIcon` to the `Checkout` page by going to your `Header.js` file and importing `Router` from NextAuth.
+
+```js
+import { useRouter } from "next/router"
+```
+
+Then establish the router object within the Header function. The router helps the client navigate back and forth between web pages in the application.
+
+```js
+  const router = useRouter();
+```
+
+`4` Add a onlick event to the amazon logo so that you're routed back to the home page. 
+
+```js
+  onClick={() => router.push('/')}
+```
+
+`5` Go back to your `checkout.js`, Create a container for the Shopping basket information and add the following code.
+
+
+```js
+<main className="lg:flex max-w-screen-2xl mx-auto">
+    {/* left hand */}
+    <div className="flex-grow m-5 shadow-sm">
+        <Image 
+        src="https://links.papareact.com/ikj"
+        width={1020}
+        height={250}
+        objectFit="contain"
+        />
+    </div>
+    {/* right hand */}
+    <div className="flex flex-col p-5 space-y-10 bg-white">
+        <h1 className="text-3xl border-b pb-4">Your Shopping Basket</h1>
+    </div>
+</main>
+
+```
+
+`6` Use Redux.js to act as a global store, so that you can grab information without sending down data through props. Redux centralizes your app state and helps you write apps that behave consistently. Create an `app` folder then a `store.js` file with in it. add the following code.
+
+```js
+import { configureStore } from "@reduxjs/toolkit";
+import basketReducer from "../slices/basketSlice";
+
+export const store = configureStore({
+  reducer: {
+    basket: basketReducer,
+  },
+});
+```
+
+`7` Then Create a `slices` folder and add `basketSlice.js`, which will hold the logic for when items are added and removed from the store.  
+
+```js
+import { createSlice } from "@reduxjs/toolkit";
+
+const initialState = {
+  items: [],
+};
+
+export const basketSlice = createSlice({
+  name: "basket",
+  initialState,
+  reducers: {
+    addToBasket: (state, action) => {},
+    removeFromBasket: (state, action) => {},
+  },
+});
+
+export const { addToBasket, removeFromBasket } = basketSlice.actions;
+
+// Selectors - This is how we pull information from the Global store slice
+export const selectItems = (state) => state.basket.items;
+
+export default basketSlice.reducer;
+```
+
+`8` Go to your `Product.js` Add an onclick event to the button so that the item can be added to the basket Store (Shopping Basket). Then establish a couple variables the addToBasket and dispatch functions. When you commit and action on the store an action is required, useDispatch is the action the allows us to commit that action.
+
+```js
+import { useDispatch } from "react-redux"
+import { addToBasket } from "../slices/basketSlice"
+
+  const dispatch = useDispatch();
+  const addItemToBasket = (
+    const product = {
+            id, 
+            title, 
+            price, 
+            description, 
+            category, 
+            image
+        };
+        dispatch(addToBasket(product))
+  ) => {};
+
+  <button onClick={addItemToBasket}className="mt-auto button"> Add to Basket</button>
+
+```
+
+With in the `addItemToBasket` function we use the addToBasket function from our store to pass in the product. The dispatch webhook commits the action for us, essentially sending the product as an action.
+
+`9` Go back to your `basketSlice.js` and use a spread operator to maintain the state of the current items in the store while adding new items from dispatch payload.
+
+```js
+export const basketSlice = createSlice({
+  name: "basket",
+  initialState,
+  reducers: {
+    addToBasket: (state, action) => {
+      state.items = [...state.items, action.payload]
+    },
+    removeFromBasket: (state, action) => {},
+  },
+});
+```
+
+`10` Now, we want to see how many items are in our store after we added them. Go to your `Header.js` and import the `useSelector` built in method and the `selectItems` from your `basketSlices.js`.
+
+```js
+import { useSelector } from "react-redux";
+import { selectItems } from "../slices/basketSlice"
+```
+
+`11` Store all the items with in a variable then display how many items we have in the basket.
+
+```js
+const items = useSelector(selectItems)
+```
+
+`12` Then change the `0` in the span for the ShoppingCartIcon to `{items.length}`
+
+`13` Create a `CheckoutProduct.js` component to act a template for each product.
+
+`14` The next thing we want to do is Display which items are in the Shopping Basket. Grab all the items from the Shopping Basket. If there arent any items then display a message otherwise show the items in the basket. Go to the `checkout.js` , import the `CheckoutProduct.js` and complete the previous steps from `11 , 12` selecting items from the store. Then Change the h1 tag to the following.
+
+```js
+ <h1 className="text-3xl border-b pb-4">
+  {items.length === 0 ? 'Your Momazon Basket is empty.' : "Shopping Basket"}
+ </h1>
+```
+
+Iterate through all the products in the basket and send the items to `CheckoutProduct`
+
+```js
+{items.map((item, i) => (
+  <CheckoutProduct
+  key={i}
+  id={item.id}
+  title={item.title}
+  price={item.price}
+  rating={item.rating}
+  description={item.description}
+  category={item.category}
+  image={item.image}
+  hasPrime={item.hasPrime}
+
+  />            
+))}
+```
+
+`15` Go back to the `CheckoutProduct.js` and pull in the props. import the necessary dependencies
+
+```js
+function CheckoutProduct(   {
+    id, 
+    title, 
+    price, 
+    description, 
+    category,
+    rating, 
+    image,
+    hasPrime,
+}) {
+  return ( <div className="grid grid-cols-5">
+      {/* Left side */}
+      <Image src={image} height={200} width={200} objectFit="contain"/>
+      {/* Middle */}
+      <div className="col-span-3 mx-5">
+          <p>{title}</p>
+          <div className="flex">
+              {Array(rating)
+              .fill()
+              .map((_, i) => (
+                  <StarIcon key={i} className="h-5 text-yellow-500"/>
+              ))}
+          </div>
+          <p className="text-xs my-2 line-clamp-3">{description}</p>
+          <Currency quantity={price} currency="USD"/>
+          {hasPrime && (
+              <div className="flex items-center space-x-2">
+                  <img 
+                  loading="lazy"
+                  className="w-12"
+                  src="https://links.papareact.com/fdw" 
+                  alt="" />
+                  <p className="text-xs text-gray-500">FREE Next-day Delivery</p>
+              </div>
+          )}
+      </div>
+
+      {/* Right */}
+      <div className="flex flex-col space-y-2 my-auto justify-self-end">
+      <button className="button mt-auto"> Add to Basket</button>
+      <button className="button mt-auto">Remove from Basket</button>
+      </div>
+  </div>
+  )
+```
+
+`16` Then add the functionality for the click event when you want to remove or add a product. 
+
+```js
+const addItemToBasket = () => {
+        const product = {
+            id, 
+            title, 
+            rating,
+            price, 
+            description, 
+            category, 
+            image,
+            hasPrime
+        };
+        dispatch(addToBasket(product))
+    }
+
+    const removeItemFromBasket = () => {
+        dispatch(removeFromBasket({id}))
+    }
+```
+
+and add an onclick event to the buttons 
+
+```js
+<button onClick={addItemToBasket} className="button mt-auto"> Add to Basket</button>
+<button onClick={removeItemFromBasket} className="button mt-auto">Remove from Basket</button>
+```
+
+`17` since we already built of the functionality for the `addToBasket` function, we have to add it for the `removeFromBasket` as well. Go back to your `basketSlice.js` and add the following to the `removeFromBasket` function
+
+```js
+    removeFromBasket: (state, action) => {
+      const index = state.items.findIndex(
+        // find the item by the id
+        (basketItem) => basketItem.id === action.payload.id
+        );
+        // once found save the contents of the new basket
+      let newBasket = [...state.items];
+
+      if(index >= 0) {
+        // remove found item at its index
+        newBasket.splice(index, 1)
+      } else {
+        console.warn(
+          `Cant remove product (id: ${action.payload.id}) because its not in the store`
+        );
+      }
+      // assign items to the new array minus the removed item
+      state.items = newBasket;
+    },
+```
+
