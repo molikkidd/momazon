@@ -1,8 +1,9 @@
 import { StarIcon } from "@heroicons/react/solid"
+import { session } from "next-auth/client"
 import Image from "next/image"
 import Currency from "react-currency-formatter"
 import {useDispatch} from "react-redux"
-import { addToBasket, removeFromBasket } from "../slices/basketSlice"
+import { addToBasket, removeFromBasket, selectItems } from "../slices/basketSlice"
 
 function CheckoutProduct(   {
     id, 
@@ -32,7 +33,7 @@ function CheckoutProduct(   {
     const removeItemFromBasket = () => {
         dispatch(removeFromBasket({id}))
     }
-    
+
     return ( <div className="grid grid-cols-5">
                 {/* Left side */}
                 <Image src={image} height={200} width={200} objectFit="contain"/>
@@ -60,11 +61,13 @@ function CheckoutProduct(   {
                     )}
                 </div>
 
-                {/* Right */}
                 <div className="flex flex-col space-y-2 my-auto justify-self-end">
                 <button onClick={addItemToBasket} className="button mt-auto"> Add to Basket</button>
                 <button onClick={removeItemFromBasket} className="button mt-auto">Remove from Basket</button>
                 </div>
+                {/* Right Side*/}
+
+          
             </div>
     )
 }

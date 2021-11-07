@@ -834,3 +834,57 @@ and add an onclick event to the buttons
     },
 ```
 
+`18` Now the last aspect of this initial build for the shopping cart is to add the subtotal of all the items. Go to your `checkout.js` and import `useSession` and `Currency`. add the session variable to the function then add the following code. 
+
+```js
+<div className="flex flex-col bg-white p-10 shadow-md">
+    {items.length > 0 && (
+        <>
+        <h2 className="whitespace-nowrap">
+            SubTotal ({items.length} items):
+            <span className="font-bold">
+                {/* <Currency quantity={total} currency="USD"/>  */}
+            </span>
+        </h2>
+
+        <button 
+        disabled={!session}
+        className={`button mt-2 ${
+            !session && 
+            'from-gray-300 to-gray-500 border-gray-200 text-gray-300 cursor-not-allowed'
+            }`}>
+            {/* if youre not logged in then sign in otherwise checkout */}
+            {!session ? "sign in to checkout" : "Proceed to checkout"}
+        </button>
+        </>
+    )}
+</div>
+```
+
+`19` Now that we have the basics for our checkout setup, Now its time to implement the calculate the subTotal. Go back to the `basketSlice.js`. add the following code below the `selectItems` variable
+
+```js
+// gives the total starting at 0, and add on the item price thru each iteration through the list of items 
+export const selectTotal = (state) => state.basket.items.reduce((total, item) => total + item.price, 0);
+```
+
+then import the `selectTotal` to your `checkout.js` and add the `total` object `SubTotal` h2
+
+```js
+import { selectItems, selectTotal } from "../slices/basketSlice"
+
+function Checkout() {
+  ...
+  const total = useSelector(selectTotal)
+  ...
+
+<h2 className="whitespace-nowrap">
+    SubTotal ({items.length} items):
+    <span className="font-bold ml-2">
+        <Currency quantity={total} currency="USD"/> 
+    </span>
+</h2>
+}
+
+```
+

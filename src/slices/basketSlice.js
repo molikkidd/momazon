@@ -37,5 +37,7 @@ export const { addToBasket, removeFromBasket } = basketSlice.actions;
 
 // Selectors - This is how we pull information from the Global store slice
 export const selectItems = (state) => state.basket.items;
+// gives the total starting at 0, and add on the item price thru each iteration through the list of items 
+export const selectTotal = (state) => state.basket.items.reduce((total, item) => total + item.price, 0);
 
 export default basketSlice.reducer;
