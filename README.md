@@ -888,3 +888,146 @@ function Checkout() {
 
 ```
 
+if you're using vercel then you will have to add your environment variables to the project, as well as change the links in your google cloud console account to take in next redirect URI
+
+## `8` Complete Checkout using Stripe
+
+`1` Install Stripe to handle Checkout and card information. Both stripe and stripe-js must be installed. Stripe is used to make server side requests to the API and stripe-js provides methods for client-side-code. 
+
+```text
+yarn add stripe
+yarn add @stripe/stripe-js
+
+```
+
+`2` Change the syntax on the `checkout` button to match that of the stripe documentation. 
+
+```js
+<button role="link"
+disabled={!session}
+... 
+>
+  Checkout
+</button>
+```
+
+`3` Create Checkout Session.
+We have to send the basket items to stripe so that the user can make a payment. When items are sent, Stripe creates a session. Go to the `checkout.js` and the createCheckoutSession function. 
+
+```js
+const createCheckoutSession = () => {
+    
+}
+```
+
+`4` stripe uses a public key to allows users to connect with their stripe account. Sign up for a stripe account and copy and paste the `pushblishable key` and `secret key` into your `env.local.`
+
+`5` Then go to your `next.config.js` file and add an env variable that will set your public key
+
+```js
+env: {s
+    stripe_public_key: process.env.STRIPE_PUBLIC_KEY,
+},
+```
+
+`6` Now create a `create-checkout-session` file in your `api` folder. 
+
+`7` Then install `axios` to assist with the backend calls to the API.
+
+```text
+yarn add axios
+```
+
+`8` Within the `create-checkout-session.js` require stripe and axios to make a request to the stripe end point. destructure the req data.
+
+```js
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+export default async (req, res) => {
+    // destructure and pass in items to checkout
+    const {items, email } = req.body;
+
+};
+
+```
+
+`9` Go back to your `checkout.js` and add the function `createCheckoutSession` , sending the requested data. Then add an `onClick={createCheckoutSession}` event to the `proceed to checkout` button.
+
+```js
+    const createCheckoutSession = async () => {
+            const stripe = await stripePromise;
+
+            // call to backend endpoint and pass in the products from the basket and the 
+            // the user email.
+            const checkoutSession =  await axios.post('/api/create-checkout-session', { 
+                items: items,
+                email: session.user.email
+                });
+    }
+```
+
+`10` Go back to your `create-checkout-session.js` and transform the sent data into a stripe format.
+
+```js
+const transformedItems = items.map(items => ({
+        description: item.description,
+        quantity: 1,
+        price_data: {
+            currency: "usd",
+            unit_amount: item.price * 100, 
+            product_data: {
+                name: items.title,
+                images: [item.image]
+            },
+
+        }
+    }));
+```
+
+`11` Then use stripes built in methods to create a session and send the formatted data to stripe.
+
+- Side Note: create a shipping rate in your stripe account, by going to the `Products` , click on `Shipping rates`, `add new shipping rate` then input the necessary information. Copy the shipping rate `ID` and it to the `shipping_rate` attribute in your session object.
+
+```js
+    // create session and send data to stripe
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        // only next shipping is given, but you can add other shipping options. 
+        shipping_rate: ['shr_1JtMMTIerg74cifZLouv6e1X'],
+        shipping_address_collection: {
+            allowed_countries: ['GB', 'US', 'CA']
+        },
+        line_items: transformedItems,
+        mode: 'payment',
+        success_url: `${process.env.HOST}/success`,
+        cancel_url: `${process.env.HOST}/checkout`,
+        metadata: {
+            email,
+            images: JSON.stringify(items.map(item => item.image))
+        }
+    })
+    // respond to the requested data
+    res.status(200).json({ id: session.id})
+```
+
+
+
+`12`Logic -> the `createCheckoutSession` function contacts the api and creates a session, then responds to the backend `res`ponds to the `req`uest and with the session then redirects to the Stripe checkout page. Add the following code below into the `createCheckoutSession`
+
+```js
+ // Redirect user/customer to stripe Checkout
+            const result = await stripe.redirectToCheckout({
+                sessionId: checkoutSession.data.id
+            })
+
+            if (result.error) {
+                alert(result.error.message);
+            };
+```
+
+`13`
+`14`
+`15`
+`16`
+
+## `9` Add Orders to page
