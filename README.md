@@ -890,7 +890,7 @@ function Checkout() {
 
 if you're using vercel then you will have to add your environment variables to the project, as well as change the links in your google cloud console account to take in next redirect URI
 
-## `8` Complete Checkout using Stripe
+## `8` Connect Checkout Page to Stripe
 
 `1` Install Stripe to handle Checkout and card information. Both stripe and stripe-js must be installed. Stripe is used to make server side requests to the API and stripe-js provides methods for client-side-code. 
 
@@ -1016,18 +1016,311 @@ const transformedItems = items.map(items => ({
 
 ```js
  // Redirect user/customer to stripe Checkout
-            const result = await stripe.redirectToCheckout({
-                sessionId: checkoutSession.data.id
-            })
+  const result = await stripe.redirectToCheckout({
+      sessionId: checkoutSession.data.id
+  })
 
-            if (result.error) {
-                alert(result.error.message);
-            };
+  if (result.error) {
+      alert(result.error.message);
+  };
 ```
 
-`13`
-`14`
-`15`
-`16`
+`13` Now test the `Proceed to Checkout button`. It should redirect you to the stripe checkout page with the products from the basket.
 
-## `9` Add Orders to page
+`14` Now we have to create a webhook to store the basket information into a database, so that we can send the information to our `/success` route once the payment information is entered. install stripe cli, use the correct install method depending on the type of os you have. 
+
+```text
+brew install stripe/stripe-cli/stripe
+```
+
+`15` Check to see if stripe is installed properly on your machine by typing in `stripe` into the command line. You should get back a list of options. After you have successfully installed stripe cli, login into to your stripe account `stripe login` and follow the commands from the browser and `allow access`. Make sure you are connecting to the correct store.
+
+`16` Go back to command line and type in `stripe listen --forward-to localhost:3000/api/webhook` and copy the webhook signing secret to your .env.local file under the `STRIPE_SIGNING_SECRET` 
+
+
+`17` CREATE WEBHOOK, create `webhook.js` inside the `api` folder
+
+
+`18` Then install micro and firebase-admin
+
+```text
+yarn add micro
+yarn add firebase-admin
+```
+
+`19` Go to your `firebase` account, click on the associated project for the build, then go to the project settings --> service accounts and `generate new private key`. Copy and paste the raw data view into a new file called `permissions.json` at the root level of your application. This allows us access to the backend database.
+
+`20` Stay within your `Firebase account` and  go to the `Firebase Database` on the left handside to set up your database to save the data being sent from the webhook. click `create database` and start in test mode for this build. then click `enable`
+
+`21` Go back to your `webhook.js`, and add the following code.
+
+```js
+import { buffer } from "micro"
+import * as admin from 'firebase-admin'
+
+// Secure a connection to Firebase from the backend
+const serviceAccount = require('../../../permissions.json');
+const app = !admin.apps.length 
+    ? admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+        }) 
+    : admin.app();
+
+// Establish connection to stripe
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const endpointSecret = process.env.STRIPE_SIGNING_SECRET;
+// sends data to firebase database
+const fulfillOrder = async (session) => {
+    return app.firestore()
+    .collection('users')
+    .doc(session.metadata.email)
+    .collection('orders')
+    .doc(session.id)
+    .set({
+        amount: session.amount_total / 100,
+        amount_shipping: session.total_details.amount_shipping /  100,
+        images: JSON.parse(session.metadata.images),
+        timestamp: admin.firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => {
+        console.log(`SUCCESS: Order ${session.id} had been added to the DB`)
+    })
+}
+export default async (req,res) => {
+    if (req.method === 'POST') {
+        const requestBuffer = await buffer(req);
+        const payload = requestBuffer.toString();
+        const sig = req.headers['stripe-signature'];
+        
+        let event;
+        
+        // verify if the event came from stripe
+        try {
+            event = stripe.webhooks.constructEvent(payload, sig, endpointSecret)
+        } catch (err) {
+            console.log('error', err.message)
+            return res.status(400).send(`Webhook error: ${err.message}`)
+        }
+
+        // Handle session completed event
+
+        if (event.type === 'checkout.session.completed') {
+            const session = event.data.object;
+
+            // FulFill the order
+            return fulfillOrder(session)
+            .then(()=> res.status(200))
+            .catch((err) => res.status(400)
+            .send(`Webhook Error: ${err.message}`))
+
+        }
+    }
+};
+// disables body parser so the object being sent matches the stripe format
+export const config = {
+    api: {
+        bodyParser: false,
+        externalResolver: true
+    }
+}
+```
+
+`22` Check your Webhook by running `stripe listen --forward-to localhost:3000/api/webhook` again in another terminal window. Go to your website, add products to the basket, complete the mock payment information. You should success messages in your terminal, then go back to the firebase database and check whether the order information populates. 
+
+## `9` Create a Success page to route after 
+
+`1` Create a `success` page and add the following code to the file.
+
+```js
+import { CheckCircleIcon } from "@heroicons/react/solid"
+import router, { useRouter } from "next/router"
+import Header from "../components/Header"
+
+function success() {
+
+    const router = useRouter();
+
+    return (
+        <div className="bg-gray-100">
+            <Header/>
+
+            <main className="max-w-screen-lg mx-auto">
+                <div className="flec flex-col p-10 bg-white">
+                    <div className="flex items-center space-x-2 mb-5">
+                        <CheckCircleIcon className="text-green-500 h-10"/>
+                        <h1 className="text-3xl">
+                            Thank you, your Order has been confirmed!
+                        </h1>
+                    </div>
+                    <p>
+                        Thank you for shipping with us. We'll send a confirmation 
+                        once your item has shipped, if you would like to check 
+                        the status of your order(s) please press the link below
+                    </p>
+                    <button onClick={()=> router.push("/orders")} className="button mt-8">Go to my orders</button>
+                </div>
+            </main>
+        </div>
+    )
+}
+
+export default success
+
+```
+
+## `10` Build the Orders to page
+
+`1` Create a `orders` page .
+
+```js
+import { useSession } from "next-auth/client"
+import Header from "../components/Header"
+
+function Orders() {
+    const [session] = useSession();
+    return (
+        <div>
+        <Header/>
+        <main className="max-w-screen-lg mx-auto p-10">
+            <h1 className="text-3xl border-b mb-2 pb-1 border-yellow-400" >
+                Your Orders
+            </h1>
+            {session ? (
+                <h2> Orders</h2>
+            ) : (
+                <h2>Pleae sign in to see your orders</h2>
+            )}
+
+            <div className="mt-5 space-y-4">
+            // Map thru the orders and pass each one to the orders component
+            // Uncomment this section once the ORDERS COMPONENT IS COMPLET
+            // {orders?.map(({ id, amount, amountShipping, items, timestamp, images}) => (
+            //         <Order 
+            //         key ={id}
+            //         id={id}
+            //         amount={amount}
+            //         amountShipping={amountShipping}
+            //         items={items}
+            //         timestamp={timestamp}
+            //         images={images}
+            //         />
+            //     ))}
+            </div>
+        </main>
+        </div>
+    )
+}
+
+export default Orders;
+```
+
+
+`2` The next steps is to connect to the firebase database and grab the orders and render them on the page, but first we must go back to our firebase.js and initialize our db for export to the orders page. add the following. 
+
+```js
+  const app = !firebase.apps.length
+  ? firebase.initializeApp(firebaseConfig)
+  : firebase.app();
+
+  const db = app.firestore()
+
+  export default db;
+```
+
+
+`3` Go back to the orders page and connect to the Firebase database and grab all the orders
+
+```js
+export async function getServerSideProps(context) {
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+    const session = await getSession(context);
+    if(!session) {
+        return {
+            props: {},
+        };
+    }
+    // Firebase Database
+    const stripeOrders = await db.collection('users')
+    .doc(session.user.email)
+    .collection('orders')
+    .orderBy('timestamp', 'desc')
+    .get();
+
+    // Stripe Orders
+    const orders = await Promise.all(
+        stripeOrders.docs.map(async (order) => ({
+            id: order.id,
+            amount: order.data().amount,
+            amountShipping: order.data().amount_shipping,
+            images: order.data().images,
+            timestamp: moment(order.data().timestamp.toDate()).unix(),
+            items: (
+                await stripe.checkout.sessions.listLineItems(order.id, {
+                    limit: 100,
+                })
+            ).data,
+        }))
+    );
+
+    return {
+        props: {
+            orders,
+        },
+    };
+}
+```
+
+`4` Add `moment` so that you can share timestamps across databases
+
+  ```text
+  yarn add moment
+  ```
+
+`5` Create a `Order.js` component for each individual order in the database. 
+
+```js
+import moment from "moment"
+import Currency from "react-currency-formatter"
+
+function Order({ id, amount, amountShipping, items, timestamp, images}) {
+    return (
+        <div className="relative border rounded-md">
+            <div className="flex items-center space-x-10 p-5 bg-gray-100 text-sm text-gray-600">
+            <div>
+                <p className='font-bold text-xs'>Order Placed</p>
+                <p>{moment.unix(timestamp).format("DD MMM YYYY")}</p>
+            </div>
+            <div>
+                <p className="text-xs font-bold">TOTAL</p>
+
+                <p>
+                    <Currency quantity={amount} currency="USD"/> - Next Day Delivery{" "}
+                    <Currency quantity={amountShipping} currency="USD"/>
+                </p>
+            </div>
+            
+                <p className="text-sm whitespace-nowrap sm:text-xl self-end flex-1 text-right text-blue-500">
+                    {items.length} items
+                </p>
+                <p className="absolute top-2 right-2 w-40 lg:w-72 truncate text-xs whitespace-nowrap">
+                    Order # {id}
+                </p>
+            </div>
+
+            <div className="p-5 sm:p-10 ">
+                <div className="flex space-x-6 overflow-x-auto">
+                    {images.map(image => (
+                        <img src={image} alt="" className="h-20 object-contain sm:h-32"/>
+                    ))}
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export default Order
+
+```
+
+`6` Restart your server and test the full functionality of the application.

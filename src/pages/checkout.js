@@ -18,12 +18,20 @@ function Checkout() {
             const stripe = await stripePromise;
 
             // call to backend endpoint and pass in the products from the basket and the 
-            // the user email.
+            // the user email. which returns a session id that will be used in the subsequent 
+            // result function
             const checkoutSession =  await axios.post('/api/create-checkout-session', { 
                 items: items,
                 email: session.user.email
                 });
             // Redirect user/customer to stripe Checkout
+            const result = await stripe.redirectToCheckout({
+                sessionId: checkoutSession.data.id
+            })
+
+            if (result.error) {
+                alert(result.error.message);
+            };
     }
     return (
         <div className="bg-gray-100">
